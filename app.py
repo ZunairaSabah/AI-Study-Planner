@@ -4,7 +4,7 @@ from planner import calculate_priority, generate_study_plan
 from reportlab.pdfgen import canvas
 import io
 
-st.title("📚 AI Study Planner")
+st.title("📚 Zun's AI Study Planner")
 
 st.write("Enter your subjects to generate a smart study plan.")
 
