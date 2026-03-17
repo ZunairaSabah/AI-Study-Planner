@@ -49,6 +49,8 @@ This project is designed to help students plan their study schedule efficiently 
 - Add user login system  
 - Save study plans  
 - Improve UI/UX design  
-- Add reminders/notifications  
+- Add reminders/notifications
+
+  🔗 [Try the AI Study Planner live!](https://ai-study-planner-vyitzdowzlxxa4gudqmxef.streamlit.app/)
 
 
