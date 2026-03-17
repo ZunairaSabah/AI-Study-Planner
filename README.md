@@ -8,12 +8,12 @@ It helps students manage their time effectively by automatically distributing st
 
 ##  Features
 
-- ✔ Priority-based study scheduling  
-- ✔ Automatic time allocation  
-- ✔ 🟢 Smart break insertion between sessions  
-- ✔ 📄 Download timetable as PDF  
-- ✔ Clean and readable timetable format  
-- ✔ Simple and user-friendly interface  
+- Priority-based study scheduling  
+- Automatic time allocation  
+- 🟢 Smart break insertion between sessions  
+- 📄 Download timetable as PDF  
+- Clean and readable timetable format  
+- Simple and user-friendly interface  
 
 ---
 
@@ -27,7 +27,7 @@ It helps students manage their time effectively by automatically distributing st
 
 ---
 
-## ▶️ How to Run the Project
+## How to Run the Project
 
 ### 1. Install required libraries
 pip install -r requirements.txt
