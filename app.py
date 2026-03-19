@@ -32,7 +32,7 @@ with col1:
         exam_date = st.date_input("Exam Date", key=f"date{i}")
 
         if name:
-            formatted_name = name.strip().title()  # Auto capitalize
+            formatted_name = name.strip().title()
             priority = calculate_priority(difficulty, exam_date)
 
             subjects.append({
@@ -49,7 +49,7 @@ with col1:
 
 # -------- OUTPUT SECTION --------
 with col2:
-    st.subheader("📊 Generated Schedule")
+    st.subheader("Generated Schedule")
 
     if generate_btn:
 
@@ -101,14 +101,8 @@ with col2:
                 start_str = current_time.strftime('%H:%M')
                 end_str = end_time.strftime('%H:%M')
 
-                # -------- DISPLAY --------
-                st.markdown(
-                    f"""
-                    **📘 {subject['name']}**  
-                    🕒 {start_str} - {end_str}  
-                    ⏱ {duration_text}
-                    """
-                )
+                # ✅ CLEAN SINGLE-LINE OUTPUT
+                st.write(f"{subject['name']} → {start_str} - {end_str} ({duration_text})")
 
                 schedule_data.append(f"{subject['name']} → {start_str} - {end_str} ({duration_text})")
 
@@ -152,7 +146,7 @@ with col2:
             pdf_buffer.seek(0)
 
             st.download_button(
-                label="📥 Download Timetable (PDF)",
+                label="Download Timetable (PDF)",
                 data=pdf_buffer,
                 file_name="study_timetable.pdf",
                 mime="application/pdf"
