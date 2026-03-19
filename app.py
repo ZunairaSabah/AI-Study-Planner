@@ -1,110 +1,159 @@
 import streamlit as st
 import datetime
+import time
 from planner import calculate_priority, generate_study_plan
 from reportlab.pdfgen import canvas
 import io
 
-st.title("📚 Zun's AI Study Planner")
+# -------- PAGE CONFIG --------
+st.set_page_config(page_title="AI Study Planner", layout="wide")
+
+# -------- HEADER --------
+st.markdown("## 📚 Zun's AI Study Planner")
 st.caption("Generate smart study schedules in seconds")
+st.divider()
 
+# -------- LAYOUT --------
+col1, col2 = st.columns(2)
 
-st.write("Enter your subjects to generate a smart study plan.")
+# -------- INPUT SECTION --------
+with col1:
+    st.subheader("📥 Enter Study Details")
 
-subjects = []
+    subjects = []
 
-num_subjects = st.number_input("How many subjects?", min_value=1, max_value=10)
+    num_subjects = st.number_input("Number of Subjects", min_value=1, max_value=10)
 
-for i in range(num_subjects):
-    st.subheader(f"Subject {i+1}")
+    for i in range(num_subjects):
+        st.markdown(f"### Subject {i+1}")
 
-    name = st.text_input("Subject Name", key=f"name{i}")
-    difficulty = st.slider("Difficulty (1-5)", 1, 5, key=f"diff{i}")
-    exam_date = st.date_input("Exam Date", key=f"date{i}")
+        name = st.text_input("Subject Name", key=f"name{i}")
+        difficulty = st.slider("Difficulty (1-5)", 1, 5, key=f"diff{i}")
+        exam_date = st.date_input("Exam Date", key=f"date{i}")
 
-    if name:
-        priority = calculate_priority(difficulty, exam_date)
-        subjects.append({
-            "name": name,
-            "priority": priority
-        })
+        if name:
+            formatted_name = name.strip().title()  # Auto capitalize
+            priority = calculate_priority(difficulty, exam_date)
 
-hours = st.number_input("Study hours per day", min_value=1, max_value=12)
+            subjects.append({
+                "name": formatted_name,
+                "priority": priority
+            })
 
-start_time = st.time_input("Study Start Time")
+    st.divider()
 
-# -------- BUTTON --------
-if st.button("Generate Study Plan"):
+    hours = st.number_input("Study Hours per Day", min_value=1, max_value=12)
+    start_time = st.time_input("Start Time")
 
-    plan = generate_study_plan(subjects, hours)
+    generate_btn = st.button("Generate Study Plan 🚀")
 
-    st.subheader("📅 Your Study Schedule")
+# -------- OUTPUT SECTION --------
+with col2:
+    st.subheader("📊 Generated Schedule")
 
-    schedule_data = []
+    if generate_btn:
 
-    current_time = datetime.datetime.combine(datetime.date.today(), start_time)
+        if not subjects:
+            st.warning("Please enter at least one subject")
 
-    for i, subject in enumerate(plan):
+        else:
+            # -------- LOADING ANIMATION --------
+            with st.spinner("🤖 AI is generating your study plan..."):
 
-        total_minutes = int(subject["study_time"] * 60)
+                progress = st.progress(0)
+                status_text = st.empty()
 
-        # Convert to hours + minutes
-        hrs = total_minutes // 60
-        mins = total_minutes % 60
+                messages = [
+                    "Analyzing subjects...",
+                    "Calculating priorities...",
+                    "Generating schedule...",
+                    "Finalizing plan..."
+                ]
 
-        duration_text = f"({hrs} hr {mins} min)"
+                for i in range(100):
+                    time.sleep(0.015)
+                    progress.progress(i + 1)
 
-        end_time = current_time + datetime.timedelta(minutes=total_minutes)
+                    if i % 25 == 0 and i // 25 < len(messages):
+                        status_text.caption(messages[i // 25])
 
-        start_str = current_time.strftime('%H:%M')
-        end_str = end_time.strftime('%H:%M')
+            st.success("✅ Plan generated successfully!")
+            st.divider()
 
-        # Display study block
-        st.write(f"{subject['name']} → {start_str} - {end_str} {duration_text}")
+            # -------- GENERATE PLAN --------
+            plan = generate_study_plan(subjects, hours)
 
-        schedule_data.append(f"{subject['name']} → {start_str} - {end_str} {duration_text}")
+            schedule_data = []
 
+            current_time = datetime.datetime.combine(datetime.date.today(), start_time)
 
-        # -------- BREAK LOGIC --------
-        break_minutes = 0
+            for i, subject in enumerate(plan):
 
-        if total_minutes >= 120:
-            break_minutes = 15
-        elif total_minutes >= 60:
-            break_minutes = 10
+                total_minutes = int(subject["study_time"] * 60)
 
-        # Add break if not last subject
-        if break_minutes > 0 and i != len(plan) - 1:
-            break_end = current_time + datetime.timedelta(minutes=break_minutes)
+                hrs = total_minutes // 60
+                mins = total_minutes % 60
 
-            break_text = f"(Break {break_minutes} min) {current_time.strftime('%H:%M')} - {break_end.strftime('%H:%M')}"
+                duration_text = f"{hrs} hr {mins} min"
 
-            st.write(f"🟢 {break_text}")
+                end_time = current_time + datetime.timedelta(minutes=total_minutes)
 
-            schedule_data.append(break_text)
+                start_str = current_time.strftime('%H:%M')
+                end_str = end_time.strftime('%H:%M')
 
-            current_time = break_end
+                # -------- DISPLAY --------
+                st.markdown(
+                    f"""
+                    **📘 {subject['name']}**  
+                    🕒 {start_str} - {end_str}  
+                    ⏱ {duration_text}
+                    """
+                )
 
+                schedule_data.append(f"{subject['name']} → {start_str} - {end_str} ({duration_text})")
 
-    # -------- PDF DOWNLOAD --------
+                # -------- BREAK LOGIC --------
+                break_minutes = 0
 
-    pdf_buffer = io.BytesIO()
-    pdf = canvas.Canvas(pdf_buffer)
+                if total_minutes >= 120:
+                    break_minutes = 15
+                elif total_minutes >= 60:
+                    break_minutes = 10
 
-    y = 800
-    pdf.drawString(180, y, "AI Study Planner Timetable")
+                if break_minutes > 0 and i != len(plan) - 1:
+                    break_end = current_time + datetime.timedelta(minutes=break_minutes)
 
-    y -= 40
+                    break_text = f"Break ({break_minutes} min): {current_time.strftime('%H:%M')} - {break_end.strftime('%H:%M')}"
 
-    for row in schedule_data:
-        pdf.drawString(80, y, row)
-        y -= 25
+                    st.info(f"🟢 {break_text}")
 
-    pdf.save()
-    pdf_buffer.seek(0)
+                    schedule_data.append(break_text)
 
-    st.download_button(
-        label="Download Timetable (PDF)",
-        data=pdf_buffer,
-        file_name="study_timetable.pdf",
-        mime="application/pdf"
-    )
+                    current_time = break_end
+                else:
+                    current_time = end_time
+
+            # -------- PDF DOWNLOAD --------
+            pdf_buffer = io.BytesIO()
+            pdf = canvas.Canvas(pdf_buffer)
+
+            y = 800
+            pdf.setFont("Helvetica-Bold", 14)
+            pdf.drawString(140, y, "Zun's AI Study Planner Timetable")
+
+            y -= 40
+            pdf.setFont("Helvetica", 10)
+
+            for row in schedule_data:
+                pdf.drawString(60, y, row)
+                y -= 20
+
+            pdf.save()
+            pdf_buffer.seek(0)
+
+            st.download_button(
+                label="📥 Download Timetable (PDF)",
+                data=pdf_buffer,
+                file_name="study_timetable.pdf",
+                mime="application/pdf"
+            )
