@@ -6,7 +6,7 @@ import io
 
 st.title("📚 Zun's AI Study Planner")
 st.caption("Generate smart study schedules in seconds")
-st.divider()
+
 
 st.write("Enter your subjects to generate a smart study plan.")
 
